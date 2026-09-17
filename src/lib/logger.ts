@@ -1,10 +1,4 @@
-/**
- * Minimal structured logger.
- *
- * IMPORTANT: when running over the stdio MCP transport, stdout is reserved
- * exclusively for JSON-RPC protocol messages. Any stray console.log() will
- * corrupt the stream and break the client. All logging here goes to stderr.
- */
+
 
 type Level = "debug" | "info" | "warn" | "error";
 
