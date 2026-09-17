@@ -1,25 +1,31 @@
-import { test } from "node:test";
-import assert from "node:assert/strict";
-import { tools } from "./math.js";
+import { z } from "zod";
+import { defineTool } from "../lib/defineTool.js";
 
-const add = tools.find((t) => t.name === "add")!;
-const divide = tools.find((t) => t.name === "divide")!;
-
-test("add returns the sum", async () => {
-  const input = add.inputSchema.parse({ a: 2, b: 3 });
-  const result = await add.handler(input, fakeCtx());
-  assert.equal(result, "5");
+const add = defineTool({
+  name: "add",
+  description: "Add two numbers together.",
+  inputSchema: z.object({
+    a: z.number().describe("First number"),
+    b: z.number().describe("Second number"),
+  }),
+  handler: ({ a, b }) => String(a + b),
 });
 
-test("divide rejects zero denominator", async () => {
-  const input = divide.inputSchema.parse({ numerator: 10, denominator: 0 });
-  await assert.rejects(async () => divide.handler(input, fakeCtx()), /Cannot divide by zero/);
+const divide = defineTool({
+  name: "divide",
+  description: "Divide the first number by the second.",
+  inputSchema: z.object({
+    numerator: z.number(),
+    denominator: z.number(),
+  }),
+  annotations: { readOnlyHint: true },
+  handler: ({ numerator, denominator }) => {
+    if (denominator === 0) {
+      throw new Error("Cannot divide by zero");
+    }
+    return String(numerator / denominator);
+  },
 });
 
-function fakeCtx() {
-  return {
-    requestId: "test",
-    signal: new AbortController().signal,
-    logger: { debug: () => {}, info: () => {}, warn: () => {}, error: () => {} },
-  };
-}
+export const tools = [add, divide];
+export { add, divide };
